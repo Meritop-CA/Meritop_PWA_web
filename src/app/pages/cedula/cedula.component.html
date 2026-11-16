@@ -1,0 +1,64 @@
+<section class="hero">
+  <!--div class="m-dots" aria-hidden="true">
+    <span style="left:6%; top:18%"></span>
+    <span style="left:22%; top:72%; animation-delay:1s"></span>
+    <span style="left:80%; top:14%; animation-delay:.4s"></span>
+    <span style="left:91%; top:62%; animation-delay:1.6s"></span>
+    <span style="left:60%; top:88%; animation-delay:2.2s"></span>
+  </div-->
+
+  <div class="hero__copy">
+    <p>
+      Ingresa tu número de cédula para validar tu estatus y continuar con el
+      registro de tus datos de forma fácil, rápida y segura.
+    </p>
+  </div>
+
+  <form class="m-card card" [formGroup]="form" (ngSubmit)="validar()" novalidate>
+    <p class="step">Paso 1 de 2</p>
+    <h2>Validación de cédula</h2>
+    <p class="sub">Identifícate para comenzar</p>
+
+    <div class="row">
+      <div class="m-field nac">
+        <label for="nac">Tipo</label>
+        <select id="nac" formControlName="nacionalidad">
+          @for (t of tiposDocumento; track t.valor) {
+            <option [value]="t.valor" [title]="t.nombre">{{ t.valor }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="m-field grow" [class.is-invalid]="cedulaInvalida">
+        <label for="cedula">Número de documento</label>
+        <input
+          id="cedula"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="Ej. 12345678"
+          maxlength="9"
+          formControlName="cedula"
+          (input)="soloDigitos($event)"
+          [attr.aria-invalid]="cedulaInvalida" />
+        @if (cedulaInvalida) {
+          <span class="error">Ingresa solo números (entre 6 y 9 dígitos).</span>
+        } @else {
+          <span class="hint">Sin puntos ni guiones.</span>
+        }
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="m-alert danger" role="alert">{{ error() }}</div>
+    }
+
+    <button class="m-btn" type="submit" [disabled]="cargando()">
+      @if (cargando()) {
+        <span class="m-spinner" aria-hidden="true"></span> Validando…
+      } @else {
+        Continuar <span class="arrow">→</span>
+      }
+    </button>
+  </form>
+</section>

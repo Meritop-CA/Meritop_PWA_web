@@ -1,0 +1,89 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.head {
+  position: relative; z-index: 1;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+
+  .step { margin: 0; font-size: var(--fs-detalle); font-weight: var(--fw-semibold); letter-spacing: .08em; text-transform: uppercase; color: var(--m-orange); }
+  h1 { margin: .2rem 0 .3rem; font-size: var(--fs-titulo); font-weight: var(--fw-extrabold); color: var(--m-navy); letter-spacing: -.02em; }
+  .who { margin: 0; color: var(--m-muted); strong { color: var(--m-navy); } }
+  .m-badge { margin-top: .4rem; flex: 0 0 auto; }
+}
+
+.m-alert { position: relative; z-index: 1; }
+
+/* Teléfono: código de operadora + número */
+.telefono {
+  display: flex; gap: .6rem;
+  select { flex: 0 0 7.2rem; }
+  input { flex: 1 1 auto; min-width: 0; }
+}
+
+/* Razón social ocupa todo el ancho de la grilla */
+.m-field.full { grid-column: 1 / -1; }
+
+/* Productos pre-registrados de la persona (uno por BIN). */
+.productos {
+  position: relative; z-index: 1;
+  list-style: none; margin: 0; padding: .4rem 1.4rem;
+  display: flex; flex-direction: column;
+
+  li {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: .8rem 0;
+    & + li { border-top: 1px solid rgba(31, 42, 86, .08); }
+  }
+  strong { color: var(--m-navy); }
+  .empresa { display: block; font-size: var(--fs-texto-sm); color: var(--m-muted); }
+  li > div { min-width: 0; flex: 1 1 auto; }
+
+  /* Imagen de la tarjeta: proporción del cromalín (1280×768 = 5:3), a lo ancho en celular y con tope en pantallas grandes. */
+  .tarjeta {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 5 / 3;
+    object-fit: cover;
+    border-radius: 14px;
+    margin: .6rem auto 0;   /* centrada en la tarjeta de productos */
+    box-shadow: 0 6px 18px rgba(31, 42, 86, .18);
+  }
+
+  /* Producto sin imagen: logo de xtracash como sello, más chico que la tarjeta. */
+  .sin-imagen {
+    display: block;
+    width: 140px;
+    max-width: 100%;
+    height: auto;
+    margin: .6rem auto 0;   /* centrado, igual que las imágenes de producto */
+  }
+}
+
+.form {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: 1.4rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem 1.2rem;
+}
+
+.actions {
+  display: flex; justify-content: space-between; gap: .8rem; flex-wrap: wrap;
+  .m-btn { min-width: 11rem; }
+}
+
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+  .head { flex-direction: column; }
+  .actions .m-btn { flex: 1; }
+}

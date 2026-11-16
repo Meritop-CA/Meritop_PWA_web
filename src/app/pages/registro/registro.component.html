@@ -1,0 +1,146 @@
+@if (estatus(); as e) {
+<section class="wrap">
+  <!--div class="m-dots" aria-hidden="true">
+    <span style="left:4%; top:10%"></span>
+    <span style="left:94%; top:22%; animation-delay:.8s"></span>
+    <span style="left:88%; top:80%; animation-delay:1.5s"></span>
+  </div-->
+
+  <header class="head">
+    <div>
+      <p class="step">Paso 2 de 2</p>
+      <h1>{{ soloLectura() ? 'Tus datos registrados' : 'Registro de datos' }}</h1>
+      <p class="who">
+        Cédula <strong>{{ e.nacionalidad }}-{{ e.cedula }}</strong>
+      </p>
+    </div>
+  </header>
+
+  @if (guardadoOk()) {
+    <div class="m-alert success" role="status">
+      <strong>Tus datos fueron enviados con éxito</strong>, pronto te llegará un email con los pasos para activar tu línea de financiamiento.
+    </div>
+  } @else if (soloLectura()) {
+    <div class="m-alert info" role="status">
+      @switch (e.estatusCodigo) {
+        @case ('POR_CREAR') {
+          <strong>Tus datos están completos.</strong> Registrados el {{ e.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}.
+          Tu solicitud será procesada próximamente.
+        }
+        @case ('EXPORTADO') {
+          <strong>Tus datos fueron enviados con éxito</strong>, pronto te llegará un email con los pasos para activar tu línea de financiamiento.
+        }
+        @case ('CREADO') {
+          <strong>Tu producto fue creado exitosamente.</strong>
+        }
+        @default {
+          <strong>{{ e.estatusDescripcion }}.</strong> Tu información está en revisión.
+        }
+      }
+    </div>
+  } @else if (e.estatusCodigo === 'RECHAZADO_CORREGIBLE') {
+    <div class="m-alert warning" role="status">
+      <strong>Tu registro requiere una corrección.</strong> Revisa y corrige tus datos, luego vuelve a guardar.
+    </div>
+  } @else {
+    <div class="m-alert info">
+      Completa tus datos. Todos los campos son obligatorios.
+      @if (e.productos.length > 1) {
+        Se registrarán para todos tus productos.
+      }
+    </div>
+  }
+
+  @if (e.productos.length > 0) {
+    <ul class="productos m-card" aria-label="Tus productos">
+      <!-- Solo los productos cuya imagen carga (título + imagen). Sin ninguna imagen: el logo una sola vez. -->
+      @for (p of productosConImagen(); track $index) {
+        <li>
+          <div>
+            <strong>{{ p.tipoNombre ?? p.tipo }}</strong>
+            <img class="tarjeta" [src]="p.imagen" [alt]="(p.tipoNombre ?? p.tipo) + (p.empresa ? ' · ' + p.empresa : '')"
+                 (error)="marcarImagenFallida(p.imagen!)" />
+          </div>
+        </li>
+      } @empty {
+        <li>
+          <img class="sin-imagen" src="logo_version_color.png" alt="xtracash por Meritop" />
+        </li>
+      }
+    </ul>
+  }
+
+  <form class="m-card form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="grid">
+      @if (esJuridico()) {
+        <!-- Persona jurídica: razón social (admite números), sin apellido -->
+        <div class="m-field full" [class.is-invalid]="campoInvalido('nombre')">
+          <label for="nombre">Razón social</label>
+          <input id="nombre" type="text" formControlName="nombre" autocomplete="organization" maxlength="80" placeholder="Nombre de la empresa" />
+          @if (campoInvalido('nombre')) { <span class="error">Ingresa la razón social (mínimo 2 caracteres).</span> }
+        </div>
+      } @else {
+        <div class="m-field" [class.is-invalid]="campoInvalido('nombre')">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" type="text" formControlName="nombre" autocomplete="given-name" maxlength="80" placeholder="Tu nombre" (input)="soloLetras($event, 'nombre')" />
+          @if (campoInvalido('nombre')) {
+            <span class="error">{{ tienePatronInvalido('nombre') ? 'El nombre solo puede contener letras y un espacio entre palabras.' : 'Ingresa tu nombre (mínimo 2 letras).' }}</span>
+          }
+        </div>
+
+        <div class="m-field" [class.is-invalid]="campoInvalido('apellido')">
+          <label for="apellido">Apellido</label>
+          <input id="apellido" type="text" formControlName="apellido" autocomplete="family-name" maxlength="80" placeholder="Tu apellido" (input)="soloLetras($event, 'apellido')" />
+          @if (campoInvalido('apellido')) {
+            <span class="error">{{ tienePatronInvalido('apellido') ? 'El apellido solo puede contener letras y un espacio entre palabras.' : 'Ingresa tu apellido (mínimo 2 letras).' }}</span>
+          }
+        </div>
+      }
+
+      <div class="m-field" [class.is-invalid]="campoInvalido('operadora') || campoInvalido('numero') || telefonoEnUso()">
+        <label for="numero">Teléfono celular</label>
+        <div class="telefono">
+          <select id="operadora" formControlName="operadora" aria-label="Código de operadora" (change)="verificarTelefono()">
+            <option value="" disabled>Código</option>
+            @for (o of operadoras; track o) { <option [value]="o">{{ o }}</option> }
+          </select>
+          <input id="numero" type="tel" inputmode="numeric" formControlName="numero" autocomplete="tel-local"
+                 maxlength="7" placeholder="1234567" (input)="soloDigitos($event)" (blur)="verificarTelefono()" />
+        </div>
+        @if (campoInvalido('operadora') || campoInvalido('numero')) {
+          <span class="error">Selecciona el código y escribe los 7 dígitos del número.</span>
+        } @else if (telefonoEnUso()) {
+          <span class="error">Teléfono registrado para otro usuario</span>
+        } @else {
+          <span class="hint">Operadoras: {{ operadoras.join(', ') }}.</span>
+        }
+      </div>
+
+      <div class="m-field" [class.is-invalid]="campoInvalido('email') || emailEnUso()">
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" formControlName="email" autocomplete="email" maxlength="150" placeholder="nombre@correo.com" (blur)="verificarEmail()" />
+        @if (campoInvalido('email')) { <span class="error">Ingresa un correo válido.</span> }
+        @else if (emailEnUso()) { <span class="error">Correo electrónico registrado para otro usuario</span> }
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="m-alert danger" role="alert">{{ error() }}</div>
+    }
+
+    <div class="actions">
+      <button type="button" class="m-btn m-btn--ghost" (click)="volver()">{{ soloLectura() ? 'Finalizar' : 'Cerrar' }}</button>
+
+      @if (!soloLectura()) {
+        <button type="submit" class="m-btn" [disabled]="guardando()">
+          @if (guardando()) {
+            <span class="m-spinner" aria-hidden="true"></span> Guardando…
+          } @else {
+            Guardar <span class="arrow">→</span>
+          }
+        </button>
+      }
+    </div>
+  </form>
+</section>
+}
