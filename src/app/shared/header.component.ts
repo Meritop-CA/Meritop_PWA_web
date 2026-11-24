@@ -1,10 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-/**
- * Encabezado común a todas las pantallas: logo de xtracash (lleva al inicio).
- * Fondo claro → logo_version_color.png. Sobre fondos de color se usa logo_version_blanca.png.
- */
+import { currentBrand } from '../core/brand';
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -12,8 +10,8 @@ import { RouterLink } from '@angular/router';
   template: `
     <header class="hdr">
       <div class="hdr__bar">
-        <a routerLink="/" class="hdr__logo" aria-label="xtracash · ir al inicio">
-          <img class="hdr__partner" src="logo_version_color.png" alt="xtracash por Meritop" />
+        <a routerLink="/" class="hdr__logo" [attr.aria-label]="brand.name + ' · ir al inicio'">
+          <img class="hdr__partner" [src]="brand.logo" [alt]="brand.alt" />
         </a>
       </div>
     </header>
@@ -28,4 +26,6 @@ import { RouterLink } from '@angular/router';
     }
   `]
 })
-export class HeaderComponent {}
+export class HeaderComponent {
+  readonly brand = currentBrand;
+}

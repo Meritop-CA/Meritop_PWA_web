@@ -1,3 +1,4 @@
+import { currentBrand } from '../../core/brand';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
@@ -26,6 +27,7 @@ function nombrePersonaValidator(control: AbstractControl): ValidationErrors | nu
   styleUrl: './registro.component.scss'
 })
 export class RegistroComponent {
+  readonly brand = currentBrand;
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly servicio = inject(RegistroService);
@@ -43,7 +45,7 @@ export class RegistroComponent {
 
   /**
    * Productos que se muestran: los que tienen imagen y la imagen cargó. Si ninguno, la pantalla muestra el logo
-   * de xtracash una sola vez (nunca un logo por producto).
+   * de la marca una sola vez (nunca un logo por producto).
    */
   readonly productosConImagen = computed(() =>
     (this.estatus()?.productos ?? []).filter(p => !!p.imagen && !this.imagenesFallidas().has(p.imagen)));
